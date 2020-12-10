@@ -1,0 +1,12 @@
+name: carpackageshinyapp
+title: carpackageshinyapp
+username:
+account: allisongreen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3385598
+bundleId: 3972364
+url: https://allisongreen.shinyapps.io/carpackageshinyapp/
+when: 1607631677.19368
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,0 +1,149 @@
+---
+title: 'STAT 415: HW 1 - Part II'
+author: 'Allison Green, Delaney Oliver '
+date: ""
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+This RMarkdown file provides a template for you to fill in. (Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.) Read the file from start to finish, completing the parts as indicated. Some blank "code chunks" are provided; you are welcome to add more (CTRL-ALT-I) as needed.  There are also a few places where you should type text responses.
+
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. When you are finished
+
+- click **Knit** and check to make sure that you have no errors and everything runs properly. (Fix any problems and redo this step until it works.)
+- Make sure your type your name(s) at the top of the notebook where it says "Type your name(s) here". If you worked in a team, you will submit a single notebook with both names; make sure both names are included
+- Submit your completed file in Canvas.
+
+
+**Setup.** A variation of the capture/recapture technique has been applied to the problem of correcting for undercount when attempting to conduct a census of people.  Suppose that when an initial census count is done in a certain community, it counts 2381 residents.  Then an intensive follow-up survey of 200 residents is conducted, and it turns out that 189 of them were counted in the initial census.  Let $\theta$ be the actual total number of residents in the community.  
+
+a. The likelihood function in this case is the probability that the follow-up survey of 200 would have found 189 who had been counted the first time, viewed as a function of $\theta$.  Compute and plot the likelihood function for $\theta$ ranging from its smallest possible value in  this scenario to 3000.   
+
+```{r a}
+tagged = 2381 # number tagged in first sample
+n = 200 # sample size of second sample
+x = 189 # data: number in second sample already tagged
+
+
+theta = seq(from = 2381, to= 3000, by = 1) # values of theta to plot
+
+likelihood = choose(tagged, x) * choose(theta-tagged, n-x) / choose(theta, n)
+
+
+plot(theta, likelihood) # plot the likelihood function
+```
+
+b. Find the maximum likelihood estimate of $\theta$.  (Just use part (a); don't attempt any calculus.)
+
+```{r b}
+maxlikelihood = max(likelihood)
+maxlikelihood
+```
+
+c. Now consider a Bayesian analysis which starts with a prior distribution for $\theta$ that regards all integers from 2381 through 3000 as equally likely. Plot this prior distribution and determine (1) the prior mean, (2) the prior median, and (3) the prior probability that the community has at least 2500 residents.
+
+```{r c}
+n= 200
+x = 189
+tagged = 2381
+lower_bound = tagged # lower bound for theta
+upper_bound = 3000 # upper bound for theta
+
+theta = lower_bound:upper_bound # possible values of theta
+prior = rep(1/length(theta), length(theta)) # uniform prior
+plot(theta, prior)
+
+sum(theta * prior) # prior mean
+min(theta[which(cumsum(prior) >= 0.5)]) # prior median
+theta[which.max(prior)] # prior mode
+
+sum(prior[119:620]) #prior probability
+```
+
+d. Determine the posterior distribution of $\theta$, conditional on the observed data that 189 of 200 in the second sample had been in the first sample.  Plot this posterior distribution and determine (1) the posterior mean, (2) the posterior median, (3) the posterior mode, and (4) the posterior probability that the community has at least 2500 residents.
+
+```{r d}
+likelihood = choose(tagged, x) * choose(theta-tagged, n-x) / choose(theta, n)
+
+product = likelihood * prior
+posterior = product / sum(product)
+
+plot(theta, posterior, type="o") # plot posterior probability versus box 
+
+sum(theta * posterior) # posterior mean
+min(theta[which(cumsum(posterior) >= 0.5)]) # posterior median
+theta[which.max(posterior)] # posterior mode
+
+sum(posterior[119:620]) #posterior probability
+```
+
+e. Comment on how the three Bayes estimates of $\theta$ (posterior mean, median, mode) compare to each other, to the maximum likelihood estimate, and to their prior counterparts.
+
+The posterior mean is slighlty higher than the posterior median and the posterior mode, due to the right skew in the posterior distribution. The maximum likelihood is surronded on the values of 2,500 to 2,600 theta. This makes sense because the means for the prior and posterior distribution are also similar to these values.   Compared to its prior counterparts, the mean, median, mode of the posterior are lower. This could be due to the sample of the 189 out of 200 already being tagged, so the true number of residents is now estimated to be lower. 
+
+f. Comment on how the posterior probability that the community has at least 2500 residents has changed from the prior distribution, and explain why this change makes sense based on the data.
+
+The posterior probability that the community has at least 2500 residents have lowered slightly because since the 189 out of the 200 in the sample were already tagged, so the true total number of residents is now less likely to be over 2500 residents now. 
+
+g. Now select some other prior distribution for $\theta$.  It's your choice, but be sure to choose something other than a uniform (equally likely) prior.  Explain why you are choosing your prior/what prior beliefs your choice represent. Repeat parts c) through f) for your choice of prior.  Also comment on how the Bayes estimates from your analysis (with your choice to prior) compare to the Bayes estimates from part d)
+
+```{r g}
+tagged = 2381
+n = 200
+x = 189
+lower_bound = tagged # lower bound for theta
+upper_bound = 3000 # upper bound for theta
+
+theta = lower_bound:upper_bound
+
+midpoint = (upper_bound+lower_bound)/2
+prior_unnormalized = c((lower_bound:midpoint) - lower_bound, -(((midpoint):upper_bound) - upper_bound))  
+tprior = prior_unnormalized/sum(prior_unnormalized) #triangular prior
+```
+
+c.
+```{r}
+plot(theta, tprior, type = "o")
+
+sum(theta * tprior) # prior mean
+min(theta[which(cumsum(tprior) >= 0.5)]) # prior median
+theta[which.max(tprior)] # prior mode
+sum(tprior[119:620]) #prior probability
+```
+d.
+```{r}
+likelihood = choose(tagged, x) * choose(theta-tagged, n-x) / choose(theta, n)
+
+product = likelihood * tprior
+
+tposterior = product / sum(product)
+
+plot(theta, tposterior) # plot posterior probability versus box 
+
+sum(theta * tposterior) # posterior mean
+min(theta[which(cumsum(tposterior) >= 0.5)]) # posterior median
+theta[which.max(tposterior)] # posterior mode
+
+sum(tposterior[119:620]) #posterior probability
+```
+```{r}
+plot(theta, likelihood)
+maxlikelihood = max(likelihood)
+maxlikelihood
+```
+
+e. Comment on how the three Bayes estimates of $\theta$ (posterior mean, median, mode) compare to each other, to the maximum likelihood estimate, and to their prior counterparts.
+
+The posterior mean is slightly greater than the posterior median and posterior mode. This could be due to the very slight right skew in the distribution. Compared to its prior counterparts, the posterior mean, median, and mode are all lower. This could be due to the fact that most values in the prior distribution are close to 2,700 theta while most values in the posterior distribution are centered around the values 2,500 to 2,600 theta.The maximum likelihood is surronded on the values of 2,500 to 2,600 theta.This makes sense because the means for the prior and posterior distribution are also similar to these values. 
+
+f. Comment on how the posterior probability that the community has at least 2500 residents has changed from the prior distribution, and explain why this change makes sense based on the data.
+
+The posterior probability that the community has at least 2500 residents is lower than the prior probability.
+This could be due to the fact that majority of values in the prior distribution are centered around 2,700 theta while majority of values in the posterior distribution are centered around the values 2,500 to 2,600 theta.   
